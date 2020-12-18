@@ -1,4 +1,3 @@
-//Written on Fri Dec 18 by nannigalaxy
 //A Simple Contactless Ticketing System using RFID module
 
 #include<SPI.h>
@@ -63,7 +62,7 @@ ID.toUpperCase();
 
 String current_card = ID.substring(0);
 
-//
+// check for tag ID in database and is not in.
 if(current_card == PERSON_1_CARD && status_in == 0)
 {
   if(BALANCE>0){
@@ -91,7 +90,7 @@ if(current_card == PERSON_1_CARD && status_in == 0)
     delay(300);
   }
 }
-
+// deduct amount at end.
 else if(current_card == PERSON_1_CARD && status_in == 1)
 {
   digitalWrite(GREEN_LED,LOW);
