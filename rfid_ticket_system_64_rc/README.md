@@ -1,0 +1,11 @@
+## Components
+- Arduino Nano
+- OLED 128x64 (1.3in display)
+- RFID RC522 x2
+- GY-906 (IR Thermal sensor)
+- HC-SR04 (Ultrasonic sensor)
+- Servo motor x2
+- Green LED
+- Red LED
+- Buzzer
+- Resistor 10k x2
