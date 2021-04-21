@@ -23,11 +23,6 @@ Adafruit_SH1106 display(-1);
 #define mSpeed 150
 #define stock_threshold 3
 
-// symbol character hex
-// #define aup  0x1e
-// #define adown  0x1f
-// #define aright  0x10
-// #define aleft  0x11
 
 //#### Pins #######
 
