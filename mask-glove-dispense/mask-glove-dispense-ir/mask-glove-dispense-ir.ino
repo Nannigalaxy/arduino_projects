@@ -417,7 +417,7 @@ void SendMsg(uint8_t no) {
   delay(500);
   // Serial.println ("Set SMS Number");
   SIM900A.println(F(
-      "AT+CMGS=\"+918073445949\"\r")); // Mobile phone number to send message
+      "AT+CMGS=\"+919123456789\"\r")); // Mobile phone number to send message
   delay(500);
   // Serial.println ("Set SMS Content");
   switch (no) {
