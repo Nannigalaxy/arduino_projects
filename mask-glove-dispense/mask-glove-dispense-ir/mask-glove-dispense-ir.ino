@@ -1,5 +1,5 @@
-//Written on Fri Mar 05 by nannigalaxy
-//last update on Wed Apr 21
+//Written on Fri Mar 05 2021 by nannigalaxy
+//last update on Wed Apr 21 2021
 //Example for Gesture navigation with menu using IR sensor (Mask Glove Dispenser)
 
 // display library: 0.91 OLED 128x32 (I2C)
