@@ -1,8 +1,14 @@
 //Written on Fri Mar 05 by nannigalaxy
+//last update on Wed Apr 21
 //Example for Gesture navigation with menu using IR sensor (Mask Glove Dispenser)
 
+// display library: 0.91 OLED 128x32 (I2C)
 #include <Adafruit_SH1106.h>
+
+// Thermal temperature sensor: GY-906 MLX90614 (I2C)
 #include <Adafruit_MLX90614.h>
+
+// GSM module communication: SIM900A 
 #include <SoftwareSerial.h>
 
 Adafruit_MLX90614 temp = Adafruit_MLX90614();
@@ -23,19 +29,19 @@ Adafruit_SH1106 display(-1);
 // #define aright  0x10
 // #define aleft  0x11
 
-//#### PINS #######
+//#### Pins #######
 
-//ultrasonar
+// Ultrasonic sensor: HC-SR04
 #define echoPin 10 // attach pin D5 Arduino to pin Echo of HC-SR04
 #define trigPin 11 //attach pin D6 Arduino to pin Trig of HC-SR04
 #define d_threshold 30 // distance detect in cm
 int duration; // variable for the duration of sound wave travel
 int distance; // variable for the distance measurement
 
-//IR
-#define IRA A0
-#define IRB A2
-#define IRC A1
+//IR sensors
+#define IRA A0 //Mask select
+#define IRB A2 //Glove select
+#define IRC A1 //Both select
 
 
 // Motor A
@@ -47,7 +53,7 @@ int distance; // variable for the distance measurement
 #define mB1 3
 #define mB2 2
 
-//buzzer
+// Buzzer
 #define Buzzer 12
 #define T 6
 #define R 5
@@ -69,20 +75,24 @@ uint8_t state;
 
 void setup() {
   SIM900A.begin(9600);  
+  
   Serial.begin(9600);
+  
   temp.begin();
-  pinMode(trigPin, OUTPUT); // Sets the trigPin as an OUTPUT
-  pinMode(echoPin, INPUT); // Sets the echoPin as an INPUT
-  // pinMode(ir_pin, INPUT);
+  
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT); 
+  
   pinMode (IRA, INPUT);
   pinMode (IRB, INPUT);
   pinMode (IRC, INPUT);  
+  
   display.begin(SH1106_SWITCHCAPVCC, 0x3C);  
   display.clearDisplay();
   
   pinMode(Buzzer,OUTPUT);
     
-   // Set all the motor control pins to outputs
+  // Set all the motor control pins to outputs
   pinMode(enA, OUTPUT);
   pinMode(enB, OUTPUT);
   pinMode(mA1, OUTPUT);
@@ -91,17 +101,35 @@ void setup() {
   pinMode(mB2, OUTPUT);
 }
 
+//############ Logic ###########//
+//                
+//             [Person]
+//                |
+//                V
+//         [Check for temp] ---high--->  [Alert!] --> (End)
+//                |
+//               low
+//                |
+//                V
+//           [Select Menu]  ----No-or-Low Stock----> [Alert!]  --> (End)
+//                |
+//                V
+//   [Dispense Mask or Glove or Both] --> End
+//  
+//####### End Logic #########//
+
 void loop() {  
   // check for low stock
   LowStockMsg(); 
   // distance sensor
   int d = ultra_distance();  
-  // Serial.println(d);
   
+  // Check if someone approaches
   if(d <= d_threshold){
     select_tone();    
     uint8_t currentMillis = 0;
     
+    // Check 
     while(currentMillis<=temp_time){
       currentMillis++;
       temp_flag = check_temp();
@@ -118,6 +146,7 @@ void loop() {
   if(digitalRead(IRA) == 0){ 
     select_tone();
     default_disp(3,menu_option[0]);
+    // dispense if mask present
     if(stock[0]>0){
       fin_page(0,"Dispensing "+String(1));
       stock_info();     
@@ -133,6 +162,7 @@ void loop() {
   if(digitalRead(IRB) == 0) { 
     select_tone();    
     default_disp(3,menu_option[1]);
+    // dispense if glove present
     if(stock[1]>0){    
       fin_page(1,"Dispensing "+String(1)); 
       stock_info();     
@@ -150,7 +180,8 @@ void loop() {
     select_tone();    
     default_disp(3,menu_option[2]);
     if(stock[0]<1){out_of_stock(0);}
-    else if(stock[1]<1){out_of_stock(1);}   
+    else if(stock[1]<1){out_of_stock(1);}
+    // dispense if both present
     else {  
       fin_page(0,"Dispensing "+String(1)); 
       fin_page(1,"Dispensing "+String(1));
@@ -160,8 +191,6 @@ void loop() {
     }
         d=-1;
   }  
-
-    // nav_select(1,String(count),state); 
        
   }
 // out of menu
@@ -175,13 +204,14 @@ void loop() {
         error_sound(1000);        
         delay(1000);
   }  
-select_tone();   
+  select_tone();   
   }    
+// Default display 
 disp_any("Mask-Glove\nDispenser",2);
 }
 
 
-// ######## Custom functions ######
+// ######## Custom functions ######## //
 
 //ultrasonic
 int ultra_distance(){
@@ -248,59 +278,6 @@ void default_disp(uint8_t opt, String str) {
   delay(1000);
 }
 
-// void left_arrow(){
-// display.setCursor(5,25); 
-//   display.print(F(" BACK "));
-//   display.setCursor(0,25); 
-//   display.write(aleft);  
-// }
-// void right_arrow(){
-//   display.setCursor(94,25); 
-//   display.print(F(" OK "));
-//   display.setCursor(115,25); 
-//   display.write(aright);  
-// }
-
-// void up_arrow(){
-//   display.setCursor(62,0); 
-//   display.write(aup);
-// }
-// void down_arrow(){
-//   display.setCursor(62,27); 
-//   display.write(adown);
-// }
-
-// void nav_select(int nav, String txt, uint8_t menu){
-//   display.setTextSize(1); 
-//   display.setTextColor(BLACK,WHITE);
-
-//   switch(nav){
-//     case 0: display.setCursor(62,0); 
-//             display.write(aup);
-//             break;
-
-//     case 1: display.setCursor(96,25); 
-//             display.print(F(" OK "));
-//             display.setCursor(115,25); 
-//             display.write(aright);
-//             break;
-
-//     case 2: display.setCursor(62,27); 
-//             display.write(adown);
-//             break;
-
-//     case 3: display.setCursor(5,25); 
-//             display.print(F(" BACK "));
-//             display.setCursor(0,25); 
-//             display.write(aleft);
-//             break;
-//     }
-
-//   display.display();
-//   delay(200);  
-//   default_disp(menu,txt);
-//   delay(600); 
-// }
 
 void fin_page(uint8_t opt, String str){
   display.clearDisplay();
@@ -313,8 +290,6 @@ void fin_page(uint8_t opt, String str){
   display.println(str);
 
   display.setTextColor(WHITE);
-
-  // left_arrow();
 
   display.display();
   dispense_item(opt, 1);
@@ -335,8 +310,6 @@ void stock_info(){
   display.setTextSize(1);
   display.setTextColor(WHITE);
 
-  // left_arrow();
-
   display.display();
   delay(3000);
   disp_any("Thank\nYou",2); 
@@ -356,8 +329,6 @@ void out_of_stock(uint8_t opt){
 
   display.setTextSize(1);
   display.setTextColor(WHITE);
-
-  // left_arrow();
 
   display.display();
   error_sound(1000);   
@@ -444,6 +415,7 @@ case 4:
   // Serial.println ("Message has been sent");
 }
 
+// Check if stock is less than threshold else send message
 void LowStockMsg(){
   if (low_stock_glove == 0 && stock[1] <= stock_threshold) {
     low_stock_glove = 1;
